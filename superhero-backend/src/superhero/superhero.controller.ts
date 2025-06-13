@@ -3,47 +3,112 @@ import {
   Get,
   Post,
   Body,
-  Patch,
   Param,
   Delete,
+  Put,
   Query,
-  ValidationPipe,
-  UsePipes,
+  DefaultValuePipe,
+  ParseIntPipe,
+  LoggerService,
+  Inject,
+  Res,
+  HttpStatus
 } from '@nestjs/common';
+import { Response } from 'express';
 import { SuperheroService } from './superhero.service';
-import { CreateSuperheroDto, UpdateSuperheroDto } from './dto/superhero.dto';
+import { CreateSuperheroDto } from './dto/superhero.dto';
+import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 
 @Controller('superheroes')
 export class SuperheroController {
-  constructor(private readonly superheroService: SuperheroService) {}
+  constructor(
+      private readonly superheroService: SuperheroService,
+      @Inject(WINSTON_MODULE_NEST_PROVIDER) private readonly logger: LoggerService
+  ) {}
 
   @Post()
-  @UsePipes(new ValidationPipe())
-  create(@Body() createSuperheroDto: CreateSuperheroDto) {
-    return this.superheroService.create(createSuperheroDto);
+  async create(@Body() createDto: CreateSuperheroDto, @Res() res: Response) {
+    try {
+      const hero = await this.superheroService.create(createDto);
+      this.logger.log(`✅ Superhero created: ${hero.nickname}`);
+      return res.status(HttpStatus.CREATED).json(hero);
+    } catch (error) {
+      let message = 'Unknown error';
+      if (error instanceof Error) {
+        message = error.message;
+      }
+      this.logger.error(`❌ Controller create error: ${message}`);
+      return res.status((error as any).status || 500).json({ message });
+    }
+
   }
 
   @Get()
-  findAll(@Query('page') page: string = '1', @Query('limit') limit: string = '5') {
-    const pageNum = parseInt(page, 10) || 1;
-    const limitNum = parseInt(limit, 10) || 5;
-    return this.superheroService.findAll(pageNum, limitNum);
+  async findAll(
+      @Query('page', new DefaultValuePipe(1), ParseIntPipe) page: number,
+      @Query('limit', new DefaultValuePipe(5), ParseIntPipe) limit: number,
+      @Query('search') search: string,
+      @Res() res: Response
+  ) {
+    try {
+      const data = await this.superheroService.findAll(page, limit, search);
+      return res.status(HttpStatus.OK).json(data);
+    } catch (error) {
+      let message = 'Unknown error';
+      if (error instanceof Error) {
+        message = error.message;
+      }
+      this.logger.error(`❌ Controller findAll error: ${message}`);
+      return res.status((error as any).status || 500).json({ message });
+    }
   }
+
 
   @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.superheroService.findOne(id);
+  async findOne(@Param('id') id: string, @Res() res: Response) {
+    try {
+      const hero = await this.superheroService.findOne(id);
+      return res.status(HttpStatus.OK).json(hero);
+    } catch (error) {
+      let message = 'Unknown error';
+      if (error instanceof Error) {
+        message = error.message;
+      }
+      this.logger.error(`❌ Controller findOne error: ${message}`);
+      return res.status((error as any).status || 500).json({ message });
+    }
+
   }
 
-  @Patch(':id')
-  @UsePipes(new ValidationPipe())
-  update(@Param('id') id: string, @Body() updateSuperheroDto: UpdateSuperheroDto) {
-    return this.superheroService.update(id, updateSuperheroDto);
+  @Put(':id')
+  async update(@Param('id') id: string, @Body() dto: CreateSuperheroDto, @Res() res: Response) {
+    try {
+      const updated = await this.superheroService.update(id, dto);
+      return res.status(HttpStatus.OK).json(updated);
+    }catch (error) {
+      let message = 'Unknown error';
+      if (error instanceof Error) {
+        message = error.message;
+      }
+      this.logger.error(`❌ Controller update error: ${message}`);
+      return res.status((error as any).status || 500).json({ message });
+    }
+
   }
 
   @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.superheroService.remove(id);
+  async remove(@Param('id') id: string, @Res() res: Response) {
+    try {
+      await this.superheroService.remove(id);
+      return res.status(HttpStatus.NO_CONTENT).send();
+    } catch (error) {
+      let message = 'Unknown error';
+      if (error instanceof Error) {
+        message = error.message;
+      }
+      this.logger.error(`❌ Controller delete error: ${message}`);
+      return res.status((error as any).status || 500).json({ message });
+    }
+
   }
 }
-

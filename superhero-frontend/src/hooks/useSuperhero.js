@@ -1,7 +1,8 @@
 import { useState, useEffect } from 'react';
 import { superheroAPI } from '../lib/api';
 
-export const useSuperheroes = (page = 1, limit = 5) => {
+// ХУК ДЛЯ ОТРИМАННЯ СПИСКУ З ПОШУКОМ
+export const useSuperheroes = (page = 1, limit = 5, searchTerm = '') => {
   const [superheroes, setSuperheroes] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -11,7 +12,7 @@ export const useSuperheroes = (page = 1, limit = 5) => {
   const fetchSuperheroes = async () => {
     try {
       setLoading(true);
-      const response = await superheroAPI.getAll(page, limit);
+      const response = await superheroAPI.getAll(page, limit, searchTerm);
       setSuperheroes(response.data.superheroes);
       setTotalPages(response.data.totalPages);
       setTotal(response.data.total);
@@ -25,7 +26,7 @@ export const useSuperheroes = (page = 1, limit = 5) => {
 
   useEffect(() => {
     fetchSuperheroes();
-  }, [page, limit]);
+  }, [page, limit, searchTerm]);
 
   return {
     superheroes,
@@ -37,6 +38,7 @@ export const useSuperheroes = (page = 1, limit = 5) => {
   };
 };
 
+// ХУК ДЛЯ ОТРИМАННЯ ОДНОГО ГЕРОЯ
 export const useSuperhero = (id) => {
   const [superhero, setSuperhero] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -63,4 +65,3 @@ export const useSuperhero = (id) => {
 
   return { superhero, loading, error };
 };
-

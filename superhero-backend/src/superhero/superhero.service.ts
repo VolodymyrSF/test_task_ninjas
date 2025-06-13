@@ -1,59 +1,102 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import {
+  Injectable,
+  NotFoundException,
+  InternalServerErrorException,
+  ConflictException,
+  LoggerService,
+  Inject
+} from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import { Superhero, SuperheroDocument } from './superhero.schema';
 import { CreateSuperheroDto, UpdateSuperheroDto } from './dto/superhero.dto';
+import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 
 @Injectable()
 export class SuperheroService {
   constructor(
-    @InjectModel(Superhero.name) private superheroModel: Model<SuperheroDocument>,
+      @InjectModel(Superhero.name) private superheroModel: Model<SuperheroDocument>,
+      @Inject(WINSTON_MODULE_NEST_PROVIDER) private readonly logger: LoggerService
   ) {}
 
   async create(createSuperheroDto: CreateSuperheroDto): Promise<Superhero> {
-    const createdSuperhero = new this.superheroModel(createSuperheroDto);
-    return createdSuperhero.save();
+    try {
+      const exists = await this.superheroModel.findOne({ nickname: createSuperheroDto.nickname });
+      if (exists) {
+        this.logger.warn(`⚠️ Nickname already exists: ${createSuperheroDto.nickname}`);
+        throw new ConflictException('Superhero with this nickname already exists.');
+      }
+
+      const createdSuperhero = new this.superheroModel(createSuperheroDto);
+      const saved = await createdSuperhero.save();
+      this.logger.log(`✅ Created superhero with ID: ${saved._id}`);
+      return saved;
+    } catch (error) {
+      const err = error as Error;
+      this.logger.error(`❌ Create failed: ${err.message}`);
+      throw new InternalServerErrorException('Failed to create superhero');
+    }
   }
 
-  async findAll(page: number = 1, limit: number = 5): Promise<{ superheroes: Superhero[], total: number, totalPages: number }> {
-    const skip = (page - 1) * limit;
-    const superheroes = await this.superheroModel
-      .find()
-      .skip(skip)
-      .limit(limit)
-      .exec();
-    
-    const total = await this.superheroModel.countDocuments().exec();
-    const totalPages = Math.ceil(total / limit);
-    
-    return { superheroes, total, totalPages };
+  async findAll(page = 1, limit = 5, search?: string) {
+    try {
+      const skip = (page - 1) * limit;
+      const filter = search ? { nickname: { $regex: search, $options: 'i' } } : {};
+      const superheroes = await this.superheroModel.find(filter).skip(skip).limit(limit).exec();
+      const total = await this.superheroModel.countDocuments(filter).exec();
+      const totalPages = Math.ceil(total / limit);
+      this.logger.log(`📦 Fetched page ${page} of superheroes`);
+      return { superheroes, total, totalPages };
+    } catch (error) {
+      const err = error as Error;
+      this.logger.error(`❌ Fetch all failed: ${err.message}`);
+      throw new InternalServerErrorException('Failed to fetch superheroes');
+    }
   }
 
   async findOne(id: string): Promise<Superhero> {
-    const superhero = await this.superheroModel.findById(id).exec();
-    if (!superhero) {
-      throw new NotFoundException(`Superhero with ID ${id} not found`);
+    try {
+      const hero = await this.superheroModel.findById(id).exec();
+      if (!hero) {
+        this.logger.warn(`⚠️ Superhero not found: ${id}`);
+        throw new NotFoundException('Superhero not found');
+      }
+      return hero;
+    } catch (error) {
+      const err = error as Error;
+      this.logger.error(`❌ Fetch one failed: ${err.message}`);
+      throw new InternalServerErrorException('Failed to fetch superhero');
     }
-    return superhero;
   }
 
-  async update(id: string, updateSuperheroDto: UpdateSuperheroDto): Promise<Superhero> {
-    const updatedSuperhero = await this.superheroModel
-      .findByIdAndUpdate(id, updateSuperheroDto, { new: true })
-      .exec();
-    
-    if (!updatedSuperhero) {
-      throw new NotFoundException(`Superhero with ID ${id} not found`);
+  async update(id: string, updateDto: UpdateSuperheroDto): Promise<Superhero> {
+    try {
+      const updated = await this.superheroModel.findByIdAndUpdate(id, updateDto, { new: true }).exec();
+      if (!updated) {
+        this.logger.warn(`⚠️ Update failed, superhero not found: ${id}`);
+        throw new NotFoundException('Superhero not found');
+      }
+      this.logger.log(`✅ Updated superhero ${id}`);
+      return updated;
+    } catch (error) {
+      const err = error as Error;
+      this.logger.error(`❌ Update error: ${err.message}`);
+      throw new InternalServerErrorException('Failed to update superhero');
     }
-    
-    return updatedSuperhero;
   }
 
   async remove(id: string): Promise<void> {
-    const result = await this.superheroModel.findByIdAndDelete(id).exec();
-    if (!result) {
-      throw new NotFoundException(`Superhero with ID ${id} not found`);
+    try {
+      const result = await this.superheroModel.findByIdAndDelete(id).exec();
+      if (!result) {
+        this.logger.warn(`⚠️ Delete failed, superhero not found: ${id}`);
+        throw new NotFoundException('Superhero not found');
+      }
+      this.logger.log(`🗑 Superhero deleted: ${id}`);
+    } catch (error) {
+      const err = error as Error;
+      this.logger.error(`❌ Delete error: ${err.message}`);
+      throw new InternalServerErrorException('Failed to delete superhero');
     }
   }
 }
-
