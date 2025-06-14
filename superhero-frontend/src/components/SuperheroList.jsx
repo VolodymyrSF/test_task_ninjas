@@ -72,7 +72,13 @@ const SuperheroList = ({ onView, onEdit, onAdd }) => {
           <input
               type="text"
               value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
+              onChange={(e) => {
+                setSearchTerm(e.target.value);
+                if (e.target.value === '') {
+                  setAppliedSearchTerm('');
+                  setCurrentPage(1);
+                }
+              }}
               placeholder="Search by nickname..."
               className="border p-2 rounded w-full"
           />
@@ -81,6 +87,15 @@ const SuperheroList = ({ onView, onEdit, onAdd }) => {
             setAppliedSearchTerm(searchTerm);
             setCurrentPage(1);
           }}>Search</Button>
+
+          <Button variant="outline" onClick={() => {
+            setSearchTerm('');
+            setAppliedSearchTerm('');
+            setCurrentPage(1);
+          }}>
+            Clear Search
+          </Button>
+
         </div>
 
 

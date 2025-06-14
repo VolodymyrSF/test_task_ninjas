@@ -10,6 +10,7 @@
     "start": "node dist/main",
     "start:dev": "nest start --watch",
     "build": "nest build",
+    "seed": "npx ts-node ./src/utils/seed.ts",
     "test": "jest",
     "test:watch": "jest --watch",
     "test:cov": "jest --coverage"
@@ -24,7 +25,7 @@
     "class-validator": "^0.13.2",
     "jest": "^30.0.0",
     "jest-cli": "^30.0.0",
-    "mongoose": "^7.0.0",
+    "mongoose": "^7.8.7",
     "nest-winston": "^1.10.2",
     "winston": "^3.17.0"
   },
@@ -36,6 +37,7 @@
     "@types/jest": "^29.5.14",
     "@types/mocha": "^10.0.10",
     "@types/node": "^18.15.11",
+    "ts-node": "^10.9.2",
     "typescript": "^5.0.4"
   },
   "keywords": [],
