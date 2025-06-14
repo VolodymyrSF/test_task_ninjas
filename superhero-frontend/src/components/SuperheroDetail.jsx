@@ -81,7 +81,7 @@ const SuperheroDetail = ({ id, onBack, onEdit }) => {
             </blockquote>
           </div>
 
-          {superhero.images && superhero.images.length > 0 && (
+          {Array.isArray(superhero.images) && superhero.images.length > 0 && (
             <div>
               <h3 className="text-lg font-semibold mb-4">Images</h3>
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
@@ -92,7 +92,9 @@ const SuperheroDetail = ({ id, onBack, onEdit }) => {
                       alt={`${superhero.nickname} ${index + 1}`}
                       className="w-full h-full object-cover"
                       onError={(e) => {
-                        e.target.src = '/placeholder-hero.jpg';
+                        if (e.target.src !== '/placeholder-hero.jpg') {
+                          e.target.src = '/placeholder-hero.jpg';
+                        }
                       }}
                     />
                   </div>
