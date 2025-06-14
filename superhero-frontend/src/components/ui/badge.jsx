@@ -1,6 +1,6 @@
-// src/components/ui/badge.jsx
+
 import { cva } from "class-variance-authority";
-import { cn } from "@/lib/utils"; // Залежить від src/lib/utils.js
+import { cn } from "@/lib/utils";
 
 const badgeVariants = cva(
     "inline-flex items-center rounded-md border px-2.5 py-0.5 text-xs font-semibold transition-colors focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2",

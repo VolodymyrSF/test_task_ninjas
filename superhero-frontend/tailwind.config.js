@@ -2,10 +2,10 @@
 export default {
     content: [
         "./index.html",
-        "./src/**/*.{js,ts,jsx,tsx}", // Це дуже важливо!
+        "./src/**/*.{js,ts,jsx,tsx}",
     ],
     theme: {
         extend: {},
     },
-    plugins: [], // Залиште пустим, якщо tw-animate-css не плагін Tailwind
+    plugins: [],
 };

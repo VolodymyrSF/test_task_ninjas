@@ -1,6 +1,6 @@
 import { Module } from '@nestjs/common';
 import { MongooseModule } from '@nestjs/mongoose';
-import { ConfigModule, ConfigService } from '@nestjs/config'; // <--- Імпортуйте ConfigService
+import { ConfigModule, ConfigService } from '@nestjs/config';
 import { SuperheroModule } from './superhero/superhero.module';
 import {WinstonModule} from "nest-winston";
 import {winstonLogger} from "./utils/logger";

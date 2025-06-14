@@ -1,6 +1,5 @@
-// src/components/ui/input.jsx
 import * as React from "react"
-import { cn } from "@/lib/utils" // Залежить від src/lib/utils.js
+import { cn } from "@/lib/utils"
 
 const Input = React.forwardRef(({ className, type, ...props }, ref) => {
     return (

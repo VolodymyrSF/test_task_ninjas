@@ -90,7 +90,6 @@ const SuperheroForm = ({ id, onBack, onSave }) => {
             setSaving(true);
             setError(null);
 
-            // Filter out empty image URLs
             const cleanedData = {
                 ...formData,
                 images: formData.images.filter(img => img.trim() !== '')

@@ -1,6 +1,5 @@
-// src/components/ui/textarea.jsx
 import * as React from "react"
-import { cn } from "@/lib/utils" // Залежить від src/lib/utils.js
+import { cn } from "@/lib/utils"
 
 const Textarea = React.forwardRef(({ className, ...props }, ref) => {
     return (

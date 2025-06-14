@@ -1,7 +1,6 @@
 import { useState, useEffect } from 'react';
 import { superheroAPI } from '../lib/api';
 
-// ХУК ДЛЯ ОТРИМАННЯ СПИСКУ З ПОШУКОМ
 export const useSuperheroes = (page = 1, limit = 5, searchTerm = '') => {
   const [superheroes, setSuperheroes] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -38,7 +37,6 @@ export const useSuperheroes = (page = 1, limit = 5, searchTerm = '') => {
   };
 };
 
-// ХУК ДЛЯ ОТРИМАННЯ ОДНОГО ГЕРОЯ
 export const useSuperhero = (id) => {
   const [superhero, setSuperhero] = useState(null);
   const [loading, setLoading] = useState(true);
